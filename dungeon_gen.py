@@ -1,9 +1,17 @@
 import random
 import hashlib
 import time
+from dataclasses import dataclass
 
 MAX_RETRY = 1000  # Nombre maximum de tentatives pour tout algo sur une grille (ex: placement de salle de boss, génération de chemins, etc.)
-
+@dataclass
+class RoomPattern:
+    """Classe représentant un motif de salle."""
+    pattern_id: str
+    tier: int
+    max_ennemy_slot: int
+    containers: list[str]
+    
 class Room:
     room_type: str = "room" 
     coord: tuple[int, int]
@@ -12,7 +20,12 @@ class Room:
     def __init__(self, coord: tuple[int, int], room_type: str = "room") -> None:
         self.coord = coord
         self.room_type = room_type
-        self.poppulation = []
+        self.pattern = None
+    
+    def add_pattern(self, pattern: "RoomPattern") -> None:
+        self.pattern = pattern
+
+
 
 def manhattan_distance(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
