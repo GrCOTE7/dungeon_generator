@@ -1,0 +1,12 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/python:3.13",
+  "features": {
+    "ghcr.io/devcontainers/features/desktop-lite:1": {}
+  },
+  "forwardPorts": [6080, 8550],
+  "portsAttributes": {
+    "6080": { "label": "desktop-lite", "onAutoForward": "openBrowser" },
+    "8550": { "label": "flet-web", "onAutoForward": "openBrowser" }
+  },
+  "postCreateCommand": "pip install uv && uv sync"
+}

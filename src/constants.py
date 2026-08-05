@@ -1,10 +1,11 @@
 # Position of the App window
-APP_LEFT = 1460
-APP_TOP  =   30
+APP_LEFT =   0
+APP_TOP  =   0
 # Example pour un écran de 1920 x 1080 :
-# - Linux   : 1460, 30
-# - Windows : 1478, 30
-# - Vidéos  :  910,  0
+# - Linux    : 1460, 30
+# - Windows  : 1478, 30
+# - Vidéos   :  910,  0
+# CodeSpaces :    0,  0
 
 # Constants for the dungeon generator and visualization
 CELL_SIZE : int = 40  # Size of each cell in pixels
