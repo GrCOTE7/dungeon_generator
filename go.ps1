@@ -1,8 +1,5 @@
 Set-Location -Path "$PSScriptRoot"
 
-# Vérifie silencieusement l'alignement des versions; message orange uniquement en cas d'écart.
-& "$PSScriptRoot\scripts\check_version_sync.ps1"
-
 $mode = if ($args.Count -gt 0) { "$($args[0])".ToLowerInvariant() } else { "" }
 
 uv sync --extra desktop

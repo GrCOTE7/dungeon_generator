@@ -18,6 +18,12 @@ dependencies = [
     "flet-cli"
 ]
 
+[project.optional-dependencies]
+desktop = [
+    "flet-cli",
+    "flet-desktop",
+    "pyshorteners>=1.0.1"
+]
 [tool.flet.app]
 path = "src"
 

@@ -11,6 +11,10 @@ Description-Content-Type: text/markdown
 Requires-Dist: pygame==2.6.1
 Requires-Dist: flet
 Requires-Dist: flet-cli
+Provides-Extra: desktop
+Requires-Dist: flet-cli; extra == "desktop"
+Requires-Dist: flet-desktop; extra == "desktop"
+Requires-Dist: pyshorteners>=1.0.1; extra == "desktop"
 
 # Dungeon Generator
 
