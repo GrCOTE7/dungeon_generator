@@ -230,7 +230,7 @@ def seed_to_number(seed_input: str) -> int:
 
 
 if __name__ == "__main__":
-    grid = [(x, y) for x in range(grid_max_width) for y in range(grid_max_width)]
+    grid = build_grid(10, 10)
     rooms = []
     seed_input = input("Entrez une seed (ou appuyez sur Entrée pour une seed aléatoire): ")
     if not seed_input:
