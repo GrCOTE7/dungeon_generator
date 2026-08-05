@@ -1,7 +1,9 @@
-import random
-import pygame
+# ./main.py
+
+import os, sys, random, pygame, time
 from dungeon_gen import generate_dungeon
 from constant import *
+from focus import remember_focus, restore_focus
 
 def draw(screen, font, grid, rooms, seed, status):
     screen.fill(COLOR_BG)
@@ -9,34 +11,56 @@ def draw(screen, font, grid, rooms, seed, status):
         label = font.render(f"Error: {status['message']}", True, (255, 0, 0))
         screen.blit(label, (MARGIN, MARGIN + GRID_H * CELL_SIZE + 12))
         return
-    
+
     room_by_coord = {room.coord: room for room in rooms}
-    
+
     for x, y in grid:
-        rect = pygame.Rect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+        rect = pygame.Rect(
+            MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, CELL_SIZE, CELL_SIZE
+        )
         if (x, y) in room_by_coord:
             room = room_by_coord[(x, y)]
-            color = COLOR_SPAWN if room.room_type == "spawn" else COLOR_BOSS if room.room_type == "boss" else COLOR_ROOM
+            color = (
+                COLOR_SPAWN
+                if room.room_type == "spawn"
+                else COLOR_BOSS if room.room_type == "boss" else COLOR_ROOM
+            )
         else:
             color = COLOR_EMPTY
         pygame.draw.rect(screen, color, rect)
         pygame.draw.rect(screen, COLOR_GRID_LINE, rect, 1)
-    
-    label = font.render(f"seed={seed}  rooms={len(rooms)}",True,COLOR_TEXT)
+
+    label = font.render(f"seed={seed}  rooms={len(rooms)}", True, COLOR_TEXT)
 
     screen.blit(label, (MARGIN, MARGIN + GRID_H * CELL_SIZE + 12))
-    label = font.render("(R: random seed, ESPACE: seed+1, ECHAP: quitter)",True,COLOR_TEXT)
+    label = font.render(
+        "(R: random seed, ESPACE: seed+1, ECHAP: quitter)", True, COLOR_TEXT
+    )
     screen.blit(label, (MARGIN, MARGIN + GRID_H * CELL_SIZE + 36))
- 
+
+
 def main():
+    os.environ["SDL_VIDEO_WINDOW_POS"] = (
+        "1478,30"  # défaut : 1476 (910 pour vidéo) - pour un écran 1920*1080 : x et y=50 pour la position de la fenêtre
+    )
+
+    remember_focus()
+
     pygame.init()
-    screen = pygame.display.set_mode((MARGIN * 2 + GRID_W * CELL_SIZE, MARGIN * 3 + GRID_H * CELL_SIZE + 20))
+    screen = pygame.display.set_mode(
+        (MARGIN * 2 + GRID_W * CELL_SIZE, MARGIN * 3 + GRID_H * CELL_SIZE + 20)
+    )
     pygame.display.set_caption("Dungeon Generator")
     font = pygame.font.SysFont(None, 24)
 
+    # Rend le focus à la fenêtre précédente
+    time.sleep(0.2)
+    restore_focus()
+
     seed = random.randint(0, 2**32 - 1)
-    grid, rooms, status = generate_dungeon(seed, continuity_bias=CONTINUITY_BIAS, w=GRID_W, h=GRID_H, max_rooms=MAX_ROOMS)
-  
+    grid, rooms, status = generate_dungeon(
+        seed, continuity_bias=CONTINUITY_BIAS, w=GRID_W, h=GRID_H, max_rooms=MAX_ROOMS
+    )
 
     clock = pygame.time.Clock()
     running = True
@@ -49,16 +73,30 @@ def main():
                     running = False
                 elif event.key == pygame.K_r:
                     seed = random.randint(0, 2**32 - 1)
-                    grid, rooms, status = generate_dungeon(seed, continuity_bias=CONTINUITY_BIAS, w=GRID_W, h=GRID_H, max_rooms=MAX_ROOMS)
+                    grid, rooms, status = generate_dungeon(
+                        seed,
+                        continuity_bias=CONTINUITY_BIAS,
+                        w=GRID_W,
+                        h=GRID_H,
+                        max_rooms=MAX_ROOMS,
+                    )
                 elif event.key == pygame.K_SPACE:
                     seed += 1
-                    grid, rooms, status = generate_dungeon(seed, continuity_bias=CONTINUITY_BIAS, w=GRID_W, h=GRID_H, max_rooms=MAX_ROOMS)
-      
+                    grid, rooms, status = generate_dungeon(
+                        seed,
+                        continuity_bias=CONTINUITY_BIAS,
+                        w=GRID_W,
+                        h=GRID_H,
+                        max_rooms=MAX_ROOMS,
+                    )
+
         draw(screen, font, grid, rooms, seed, status)
         pygame.display.flip()
         clock.tick(60)
 
     pygame.quit()
 
+
 if __name__ == "__main__":
+    print("12345")
     main()
