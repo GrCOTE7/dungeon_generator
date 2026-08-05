@@ -20,6 +20,14 @@ def restore_focus():
 
         ctypes.windll.user32.SetForegroundWindow(_previous_hwnd)
 
+    # Pas de retour auto du focus, utiliser ALT + TAB
     elif sys.platform.startswith("linux"):
-        # pas de garantie sous Wayland
-        pass
+        if os.environ.get("WAYLAND_DISPLAY"):
+            # WSLg / Wayland :
+            # restauration de focus non autorisée par le protocole
+            pass
+
+        elif os.environ.get("DISPLAY"):
+            # X11 : possible avec xdotool/python-xlib
+            pass
+        

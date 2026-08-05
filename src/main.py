@@ -2,7 +2,7 @@
 
 import os, sys, random, pygame, time
 from src.dungeon_gen import generate_dungeon
-from src.constant import *
+from src.constants import *
 from src.focus import remember_focus, restore_focus
 
 def draw(screen, font, grid, rooms, seed, status):
@@ -41,7 +41,7 @@ def draw(screen, font, grid, rooms, seed, status):
 
 def main():
     os.environ["SDL_VIDEO_WINDOW_POS"] = (
-        f"{APP_LEFT},{APP_TOP}"  # défaut : 1476 (910 pour vidéo) - pour un écran 1920*1080 : x et y=50 pour la position de la fenêtre
+        f"{APP_LEFT},{APP_TOP}" # params dans constants.py
     )
 
     remember_focus()

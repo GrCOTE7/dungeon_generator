@@ -1,5 +1,5 @@
 # Position of the App window
-APP_LEFT = 910
+APP_LEFT = 900
 APP_TOP  =   0
 # Example pour un écran de 1920 x 1080 :
 # - Linux   : 1460, 30
