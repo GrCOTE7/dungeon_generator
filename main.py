@@ -1,10 +1,10 @@
 import random
 import pygame
-from dungeon_gen import place_spawn_room, generate_paths, grid_max_width, place_boss_room, generate_dungeon  # noqa: E402
+from dungeon_gen import generate_dungeon 
 
 CELL_SIZE = 40
-GRID_W = grid_max_width
-GRID_H = grid_max_width
+GRID_W = 10
+GRID_H = 10
 MARGIN = 20
 MAX_ROOMS = 20
 
