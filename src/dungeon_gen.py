@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 MAX_RETRY = 1000  # Nombre maximum de tentatives pour tout algo sur une grille (ex: placement de salle de boss, génération de chemins, etc.)
-DATA_DIR = Path(__file__).resolve().parent
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
 @dataclass
