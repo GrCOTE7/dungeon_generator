@@ -6,7 +6,7 @@ CELL_SIZE = 40
 GRID_W = 10
 GRID_H = 10
 MARGIN = 20
-MAX_ROOMS = 20
+MAX_ROOMS = 98
 
 COLOR_BG = (24, 24, 28)
 COLOR_GRID_LINE = (55, 55, 62)
@@ -19,9 +19,13 @@ CONTINUITY_BIAS = 1.0
 
 
 
-def draw(screen, font, grid, rooms, seed):
+def draw(screen, font, grid, rooms, seed, status):
     screen.fill(COLOR_BG)
-
+    if status["status"] != 0:
+        label = font.render(f"Error: {status['message']}", True, (255, 0, 0))
+        screen.blit(label, (MARGIN, MARGIN + GRID_H * CELL_SIZE + 12))
+        return
+    
     room_by_coord = {room.coord: room for room in rooms}
     
     for x, y in grid:
@@ -47,7 +51,8 @@ def main():
     font = pygame.font.SysFont(None, 24)
 
     seed = random.randint(0, 2**32 - 1)
-    grid, rooms = generate_dungeon(seed, continuity_bias=CONTINUITY_BIAS)
+    grid, rooms, status = generate_dungeon(seed, continuity_bias=CONTINUITY_BIAS, w=GRID_W, h=GRID_H, max_rooms=MAX_ROOMS)
+  
 
     clock = pygame.time.Clock()
     running = True
@@ -60,12 +65,12 @@ def main():
                     running = False
                 elif event.key == pygame.K_r:
                     seed = random.randint(0, 2**32 - 1)
-                    grid, rooms = generate_dungeon(seed, continuity_bias=CONTINUITY_BIAS)
+                    grid, rooms, status = generate_dungeon(seed, continuity_bias=CONTINUITY_BIAS, w=GRID_W, h=GRID_H, max_rooms=MAX_ROOMS)
                 elif event.key == pygame.K_SPACE:
                     seed += 1
-                    grid, rooms = generate_dungeon(seed, continuity_bias=CONTINUITY_BIAS)
-
-        draw(screen, font, grid, rooms, seed)
+                    grid, rooms, status = generate_dungeon(seed, continuity_bias=CONTINUITY_BIAS, w=GRID_W, h=GRID_H, max_rooms=MAX_ROOMS)
+      
+        draw(screen, font, grid, rooms, seed, status)
         pygame.display.flip()
         clock.tick(60)
 

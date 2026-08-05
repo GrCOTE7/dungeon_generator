@@ -2,6 +2,8 @@ import random
 import hashlib
 import time
 
+MAX_RETRY = 1000  # Nombre maximum de tentatives pour tout algo sur une grille (ex: placement de salle de boss, génération de chemins, etc.)
+
 class Room:
     room_type: str = "room" 
     coord: tuple[int, int]
@@ -102,8 +104,9 @@ def number_of_occupied_neighbors(coord: tuple[int, int], visited: set[tuple[int,
     
 
 # fonction recursive qui trouve les voisins disponibles pour une coordonnée donnée
-def find_available_neighbors(coord: tuple[int, int], rng: random.Random, grid: list[tuple[int, int]], visited: set[tuple[int, int]], step = 1,  path: list[tuple[int, int]] | None = None, previous_dir = None, continuity_bias: float = 0.5) -> list[tuple[int, int]] | None:
+def find_available_neighbors(coord: tuple[int, int], rng: random.Random, grid: list[tuple[int, int]], visited: set[tuple[int, int]], step = 1,  path: list[tuple[int, int]] | None = None, previous_dir = None, continuity_bias: float = 0.5, attempts: int = 0) -> list[tuple[int, int]] | None:
     """Trouve les voisins disponibles pour une coordonnée donnée."""
+
     if step <= 0: # Stop du récursif si le nombre d'étapes est atteint
         return path if path is not None else []
 
@@ -122,8 +125,11 @@ def find_available_neighbors(coord: tuple[int, int], rng: random.Random, grid: l
 
     available = {d: n for d, n in directions.items() if n in grid and n not in visited} # Filtre les voisins disponibles (dans la grille et non visités)
     if not available:
-        random_chosen_another_room = rng.choice(list(visited))
-        return find_available_neighbors(random_chosen_another_room, rng, grid, visited, step, path, previous_dir=previous_dir, continuity_bias=continuity_bias)
+        if attempts < MAX_RETRY:  # Si aucun voisin disponible, on choisit une autre salle visitée aléatoirement pour continuer le chemin
+            random_chosen_another_room = rng.choice(list(visited))
+            return find_available_neighbors(random_chosen_another_room, rng, grid, visited, step, path, previous_dir=previous_dir, continuity_bias=continuity_bias, attempts=attempts + 1)
+        else:
+            return path  
 
     dirs = list(available.keys())
     if previous_dir in dirs:
@@ -192,7 +198,12 @@ def generate_paths(grid: list[tuple[int, int]], rooms: list[Room], seed: int, ma
 def build_grid(w, h) -> list[tuple[int, int]]:
     return [(x, y) for x in range(w) for y in range(h)]
 
-def generate_dungeon(seed: int, continuity_bias: float = 0.6, w: int = 10, h: int = 10, max_rooms: int = 20) -> tuple[list[tuple[int, int]], list[Room]]:
+def generate_dungeon(seed: int, continuity_bias: float = 0.6, w: int = 10, h: int = 10, max_rooms: int = 20) -> tuple[list[tuple[int, int]], list[Room], dict[str, int]]:
+    status_dict = {"status": 0, "message": "Dungeon generated successfully."}
+    if max_rooms >= (w * h) - 2: # On retire 2 pour la salle de spawn et la salle de boss pour le moment
+        status_dict = {"status": 1, "message": f"max_rooms ({max_rooms}) is too high for the grid size ({w}x{h})."}
+        return [], [], status_dict
+    
     visited = set()
     grid = build_grid(w, h)
     spawn = place_spawn_room(grid, seed)
@@ -201,8 +212,8 @@ def generate_dungeon(seed: int, continuity_bias: float = 0.6, w: int = 10, h: in
     if boss:
         rooms.append(boss)
     else:
-        print("Warning: No suitable location found for the boss room.")
-    return grid, rooms
+        status_dict = {"status": 2, "message": "Failed to place boss room."}
+    return grid, rooms, status_dict
 
 def print_grid(grid: list[tuple[int, int]], rooms: list[Room] | None = None) -> None:
     if rooms is None:
