@@ -2,15 +2,15 @@ import random
 import hashlib
 import time
 
-grid_max_width = 10
-
 class Room:
     room_type: str = "room" 
     coord: tuple[int, int]
+    poppulation: list[str] = None
 
     def __init__(self, coord: tuple[int, int], room_type: str = "room") -> None:
         self.coord = coord
         self.room_type = room_type
+        self.poppulation = []
 
 def manhattan_distance(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
@@ -26,9 +26,11 @@ def place_spawn_room(grid: list[tuple[int, int]], seed: int) -> Room:
     """Place la salle de spawn dans la grille."""
     spawn_sub_seed = derive_seed(seed, "spawn")
     rng = random.Random(spawn_sub_seed)
+    grid_max_width = max(x for x, y in grid) + 1
+    grid_max_height = max(y for x, y in grid) + 1
 
     # Choisir plus au centre de la grille pour la salle de spawn
-    center_x, center_y = grid_max_width // 2, grid_max_width // 2
+    center_x, center_y = grid_max_width // 2, grid_max_height // 2
     grid.sort(key=lambda coord: manhattan_distance(coord, (center_x, center_y)))
     spawn_coord = rng.choices(grid, weights=[1 / (manhattan_distance(coord, (center_x, center_y))+1) ** 3 for coord in grid], k=1)[0]
     return Room(coord=spawn_coord, room_type="spawn")
@@ -120,7 +122,8 @@ def find_available_neighbors(coord: tuple[int, int], rng: random.Random, grid: l
 
     available = {d: n for d, n in directions.items() if n in grid and n not in visited} # Filtre les voisins disponibles (dans la grille et non visités)
     if not available:
-        return path
+        random_chosen_another_room = rng.choice(list(visited))
+        return find_available_neighbors(random_chosen_another_room, rng, grid, visited, step, path, previous_dir=previous_dir, continuity_bias=continuity_bias)
 
     dirs = list(available.keys())
     if previous_dir in dirs:
@@ -185,6 +188,21 @@ def generate_paths(grid: list[tuple[int, int]], rooms: list[Room], seed: int, ma
                         new_rooms.append(Room(coord=p, room_type="room"))
                         visited.add(p)  # Marquer chaque salle du chemin comme visitée
     return new_rooms
+
+def build_grid(w, h) -> list[tuple[int, int]]:
+    return [(x, y) for x in range(w) for y in range(h)]
+
+def generate_dungeon(seed: int, continuity_bias: float = 0.6, w: int = 10, h: int = 10, max_rooms: int = 20) -> tuple[list[tuple[int, int]], list[Room]]:
+    visited = set()
+    grid = build_grid(w, h)
+    spawn = place_spawn_room(grid, seed)
+    rooms = [spawn] + generate_paths(grid, [spawn], seed, max_rooms=max_rooms, continuity_bias=continuity_bias, previous_dir=spawn.coord, visited=visited)
+    boss = place_boss_room(spawn, rooms, grid, seed=seed, visited=visited)
+    if boss:
+        rooms.append(boss)
+    else:
+        print("Warning: No suitable location found for the boss room.")
+    return grid, rooms
 
 def print_grid(grid: list[tuple[int, int]], rooms: list[Room] | None = None) -> None:
     if rooms is None:

@@ -1,6 +1,6 @@
 import random
 import pygame
-from dungeon_gen import place_spawn_room, generate_paths, grid_max_width, place_boss_room  # noqa: E402
+from dungeon_gen import place_spawn_room, generate_paths, grid_max_width, place_boss_room, generate_dungeon  # noqa: E402
 
 CELL_SIZE = 40
 GRID_W = grid_max_width
@@ -17,20 +17,7 @@ COLOR_BOSS = (220, 70, 70)
 COLOR_TEXT = (230, 230, 230)
 CONTINUITY_BIAS = 1.0
 
-def build_grid() -> list[tuple[int, int]]:
-    return [(x, y) for x in range(GRID_W) for y in range(GRID_H)]
 
-def generate_dungeon(seed: int, continuity_bias: float = 0.6):
-    visited = set()
-    grid = build_grid()
-    spawn = place_spawn_room(grid, seed)
-    rooms = [spawn] + generate_paths(grid, [spawn], seed, max_rooms=MAX_ROOMS, continuity_bias=continuity_bias, previous_dir=spawn.coord, visited=visited)
-    boss = place_boss_room(spawn, rooms, grid, seed=seed, visited=visited)
-    if boss:
-        rooms.append(boss)
-    else:
-        print("Warning: No suitable location found for the boss room.")
-    return grid, rooms
 
 def draw(screen, font, grid, rooms, seed):
     screen.fill(COLOR_BG)
