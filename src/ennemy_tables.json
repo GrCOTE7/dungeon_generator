@@ -1,0 +1,19 @@
+[{
+    "table_id": "basic_ennemy_table",
+    "enemies": [
+        {
+            "enemy_id": "goblin",
+            "enemy_name": "Gobelin",
+            "enemy_description": "Un petit monstre vert.",
+            "rarity": "common"
+        },
+        {
+            "enemy_id": "orc",
+            "enemy_name": "Orc",
+            "enemy_description": "Un grand guerrier brutal.",
+            "rarity": "uncommon"
+        }
+    ]
+}
+
+]
