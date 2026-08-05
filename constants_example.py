@@ -4,7 +4,7 @@ GRID_W : int = 10  # Width of the grid in cells
 GRID_H : int = 10  # Height of the grid in cells
 MARGIN : int = 20  # Margin around the grid in pixels
 MAX_ROOMS : int = 10  # Maximum number of rooms
-CONTINUITY_BIAS : float = 1.0  # Bias for continuity in room placement
+CONTINUITY_BIAS : float = 1.0  # Bias for continuity in room placement, min: 0.0 max: 1.0
 
 # Recommended to not change these colors unless you want to customize the appearance
 COLOR_BG = (24, 24, 28)
