@@ -1,23 +1,7 @@
 import random
 import pygame
-from dungeon_gen import generate_dungeon 
-
-CELL_SIZE = 40
-GRID_W = 10
-GRID_H = 10
-MARGIN = 20
-MAX_ROOMS = 98
-
-COLOR_BG = (24, 24, 28)
-COLOR_GRID_LINE = (55, 55, 62)
-COLOR_EMPTY = (40, 40, 46)
-COLOR_ROOM = (70, 130, 220)
-COLOR_SPAWN = (70, 200, 120)
-COLOR_BOSS = (220, 70, 70)
-COLOR_TEXT = (230, 230, 230)
-CONTINUITY_BIAS = 1.0
-
-
+from dungeon_gen import generate_dungeon
+from constant import *
 
 def draw(screen, font, grid, rooms, seed, status):
     screen.fill(COLOR_BG)
