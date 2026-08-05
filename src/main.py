@@ -1,9 +1,9 @@
 # ./main.py
 
 import os, sys, random, pygame, time
-from dungeon_gen import generate_dungeon
-from constant import *
-from focus import remember_focus, restore_focus
+from src.dungeon_gen import generate_dungeon
+from src.constant import *
+from src.focus import remember_focus, restore_focus
 
 def draw(screen, font, grid, rooms, seed, status):
     screen.fill(COLOR_BG)
@@ -98,5 +98,5 @@ def main():
 
 
 if __name__ == "__main__":
-    print("12345")
+    print("123")
     main()
