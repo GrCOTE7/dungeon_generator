@@ -7,7 +7,7 @@ name = "dungeon_generator"
 version = "0.1.0"
 description = "A dungeon generator using graph theory and Pygame for visualization."
 readme = "README.md"
-requires-python = ">=3.10, <3.16"
+requires-python = ">=3.10, <3.14"
 authors = [{"name" = "Tryno"}]
 
 classifiers = [
