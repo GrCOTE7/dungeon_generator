@@ -1,0 +1,34 @@
+[{
+    "table_id": "default_loot_table",
+    "items": [
+    {
+        "item_id": "potion_health",
+        "item_name": "Potion de santé",
+        "item_description": "Restaure 50 points de vie.",
+        "item_rarity": "common"
+    },
+    {
+        "item_id": "potion_mana",
+        "item_name": "Potion de mana",
+        "item_description": "Restaure 30 points de mana.",
+        "item_rarity": "common"
+    },
+    {
+        "item_id": "sword_iron",
+        "item_name": "Épée en fer",
+        "item_description": "Une épée basique en fer.",
+        "item_rarity": "uncommon"
+    },
+    {
+        "item_id": "shield_wooden",
+        "item_name": "Bouclier en bois",
+        "item_description": "Un bouclier léger en bois.",
+        "item_rarity": "uncommon"
+    },
+    {
+        "item_id": "ring_of_strength",
+        "item_name": "Anneau de force",
+        "item_description": "+5 à la force.",
+        "item_rarity": "rare"
+    }]
+}]

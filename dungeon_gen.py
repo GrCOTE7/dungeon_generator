@@ -1,6 +1,7 @@
 import random
 import hashlib
 import time
+import json
 from dataclasses import dataclass
 
 MAX_RETRY = 1000  # Nombre maximum de tentatives pour tout algo sur une grille (ex: placement de salle de boss, génération de chemins, etc.)
@@ -11,7 +12,7 @@ class RoomPattern:
     tier: int
     max_ennemy_slot: int
     containers: list[str]
-    
+
 class Room:
     room_type: str = "room" 
     coord: tuple[int, int]
@@ -25,6 +26,30 @@ class Room:
     def add_pattern(self, pattern: "RoomPattern") -> None:
         self.pattern = pattern
 
+@dataclass
+class LootTableItem:
+    """Classe représentant un item dans une table de loot."""
+    item_id: str
+    rarity: float
+    item_name: str
+    item_description: str
+
+class LootTable:
+    """Classe représentant une table de loot."""
+    def __init__(self, table_id: str, items: list[LootTableItem]) -> None:
+        self.table_id : str = table_id
+        self.items : list[LootTableItem] = items
+
+
+def _loading_loot_tables() -> dict[str, LootTable]:
+    with open("loot_tables.json", "r") as f:
+        data = json.load(f)
+    loot_tables = {}
+    for table_data in data:
+        items = [LootTableItem(**item_data) for item_data in table_data["items"]]
+        loot_table = LootTable(table_id=table_data["table_id"], items=items)
+        loot_tables[table_data["table_id"]] = loot_table
+    return loot_tables
 
 
 def manhattan_distance(a, b):
@@ -208,10 +233,16 @@ def generate_paths(grid: list[tuple[int, int]], rooms: list[Room], seed: int, ma
                         visited.add(p)  # Marquer chaque salle du chemin comme visitée
     return new_rooms
 
+
+
 def build_grid(w, h) -> list[tuple[int, int]]:
     return [(x, y) for x in range(w) for y in range(h)]
 
 def generate_dungeon(seed: int, continuity_bias: float = 0.6, w: int = 10, h: int = 10, max_rooms: int = 20) -> tuple[list[tuple[int, int]], list[Room], dict[str, int]]:
+    loot_tables = _loading_loot_tables()  # Chargement des tables de loot
+    if not loot_tables:
+        return [], [], {"status": 3, "message": "Failed to load loot tables."}
+    
     status_dict = {"status": 0, "message": "Dungeon generated successfully."}
     if max_rooms >= (w * h) - 2: # On retire 2 pour la salle de spawn et la salle de boss pour le moment
         status_dict = {"status": 1, "message": f"max_rooms ({max_rooms}) is too high for the grid size ({w}x{h})."}
