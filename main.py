@@ -1,9 +1,7 @@
 import random
 import pygame
-from dungeon_gen import generate_dungeon 
-import os
-from constants import *
-
+from dungeon_gen import generate_dungeon
+from constant import *
 
 def draw(screen, font, grid, rooms, seed, status):
     screen.fill(COLOR_BG)

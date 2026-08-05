@@ -1,5 +1,5 @@
 # Constants for the dungeon generator and visualization
-CELL_SIZE : int = 10  # Size of each cell in pixels
+CELL_SIZE : int = 40  # Size of each cell in pixels
 GRID_W : int = 10  # Width of the grid in cells
 GRID_H : int = 10  # Height of the grid in cells
 MARGIN : int = 20  # Margin around the grid in pixels
