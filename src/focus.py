@@ -1,6 +1,6 @@
 # focus.py
 
-import sys
+import os, sys
 
 _previous_hwnd = None
 
