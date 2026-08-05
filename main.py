@@ -1,216 +1,88 @@
 import random
-import hashlib
-import time
-grid_max_width = 10
-class Room:
-    room_type: str = "room" # Type de la salle (par défaut "room")
-    coord: tuple[int, int] # Coordonnées de la salle (x, y)
+import pygame
+from dungeon_gen import place_spawn_room, generate_paths, grid_max_width, place_boss_room  # noqa: E402
 
-    def __init__(self, coord: tuple[int, int], room_type: str = "room") -> None:
-        self.coord = coord
-        self.room_type = room_type
+CELL_SIZE = 40
+GRID_W = grid_max_width
+GRID_H = grid_max_width
+MARGIN = 20
+MAX_ROOMS = 20
 
-def manhattan_distance(a, b):
-    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+COLOR_BG = (24, 24, 28)
+COLOR_GRID_LINE = (55, 55, 62)
+COLOR_EMPTY = (40, 40, 46)
+COLOR_ROOM = (70, 130, 220)
+COLOR_SPAWN = (70, 200, 120)
+COLOR_BOSS = (220, 70, 70)
+COLOR_TEXT = (230, 230, 230)
+CONTINUITY_BIAS = 1.0
 
-def derive_seed(master_seed: int, label: str) -> int:
-    """Crée une liste de sous-seeds à partir d'une seed principale."""
-    sub_seed_str: str = f"{master_seed}:{label}"
+def build_grid() -> list[tuple[int, int]]:
+    return [(x, y) for x in range(GRID_W) for y in range(GRID_H)]
 
-    sub_seed_hash: str = hashlib.sha256(sub_seed_str.encode("utf-8")).hexdigest()
-    return int(sub_seed_hash[:16], 16)
-
-def place_spawn_room(grid: list[tuple[int, int]], seed: int) -> Room:
-    """Place la salle de spawn dans la grille."""
-    spawn_sub_seed = derive_seed(seed, "spawn")
-    rng = random.Random(spawn_sub_seed)
-    spawn_coord = rng.choices(grid, k=1)[0]
-    return Room(coord=spawn_coord, room_type="spawn")
-
-def split_budget(directions: dict[str, dict], total_budget: int, rng: random.Random) -> dict[str, int]:
-    """Répartit un budget total entre les directions disponibles"""
-    direction_keys = list(directions.keys())
-
-    raw_weights = {d: rng.uniform(0.7, 1.3) for d in direction_keys}
-    total_weight = sum(raw_weights.values())
-
-    budgets = {d: round(total_budget * w / total_weight) for d, w in raw_weights.items()}
-
-    diff = total_budget - sum(budgets.values())
-    if diff != 0:
-        adjust_direction = rng.choice(direction_keys)
-        budgets[adjust_direction] += diff
-
-    return budgets
-
-def generate_paths(grid: list[tuple[int, int]], rooms: list[Room], seed: int, max_rooms: int = 10) -> list[Room]:
-    """Génère des chemins entre les salles."""
-    path_sub_seed = derive_seed(seed, "paths")
-    rng = random.Random(path_sub_seed)
-    path_weight_by_direction = {}
+def generate_dungeon(seed: int, continuity_bias: float = 0.6):
     visited = set()
+    grid = build_grid()
+    spawn = place_spawn_room(grid, seed)
+    rooms = [spawn] + generate_paths(grid, [spawn], seed, max_rooms=MAX_ROOMS, continuity_bias=continuity_bias, previous_dir=spawn.coord, visited=visited)
+    boss = place_boss_room(spawn, rooms, grid, seed=seed, visited=visited)
+    if boss:
+        rooms.append(boss)
+    else:
+        print("Warning: No suitable location found for the boss room.")
+    return grid, rooms
 
-    # Vérifies l'existence d'une salle de spawn
-    spawn_room = next((room for room in rooms if room.room_type == "spawn"), None)
-    if spawn_room is None:
-        raise ValueError("Aucune salle de spawn trouvée.")
-    visited.add(spawn_room.coord)
+def draw(screen, font, grid, rooms, seed):
+    screen.fill(COLOR_BG)
 
-    # Vérife quel voisin est disponible pour créer un chemin
-    north = (spawn_room.coord[0], spawn_room.coord[1] - 1)
-    south = (spawn_room.coord[0], spawn_room.coord[1] + 1)
-    west = (spawn_room.coord[0] - 1, spawn_room.coord[1])
-    east = (spawn_room.coord[0] + 1, spawn_room.coord[1])
-
-    print(f"Voisins disponibles pour la salle de spawn à {spawn_room.coord}:")
-    if north in grid:
-        print(f"  North: {north}")
-    if south in grid:
-        print(f"  South: {south}")
-    if west in grid:
-        print(f"  West: {west}")
-    if east in grid:
-        print(f"  East: {east}")
-
-    # Lister les directions disponibles et initialiser les poids des chemins
-    if north in grid:
-        path_weight_by_direction["north"] = {"budget": 0, "max_allowable_distance": 0}
-    if south in grid:
-        path_weight_by_direction["south"] = {"budget": 0, "max_allowable_distance": 0}
-    if west in grid:
-        path_weight_by_direction["west"] = {"budget": 0, "max_allowable_distance": 0}
-    if east in grid:
-        path_weight_by_direction["east"] = {"budget": 0, "max_allowable_distance": 0}
+    room_by_coord = {room.coord: room for room in rooms}
     
-    # trouver les distances maximales autorisées pour chaque direction en fonction de la position de la salle de spawn
-    north_distance_with_edge = spawn_room.coord[1]  
-    south_distance_with_edge = grid_max_width - 1 - spawn_room.coord[1]
-    west_distance_with_edge = spawn_room.coord[0]  
-    east_distance_with_edge = grid_max_width - 1 - spawn_room.coord[0]
+    for x, y in grid:
+        rect = pygame.Rect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+        if (x, y) in room_by_coord:
+            room = room_by_coord[(x, y)]
+            color = COLOR_SPAWN if room.room_type == "spawn" else COLOR_BOSS if room.room_type == "boss" else COLOR_ROOM
+        else:
+            color = COLOR_EMPTY
+        pygame.draw.rect(screen, color, rect)
+        pygame.draw.rect(screen, COLOR_GRID_LINE, rect, 1)
     
-    if "north" in path_weight_by_direction:
-        path_weight_by_direction["north"]["max_allowable_distance"] = north_distance_with_edge
-    if "south" in path_weight_by_direction:
-        path_weight_by_direction["south"]["max_allowable_distance"] = south_distance_with_edge
-    if "west" in path_weight_by_direction:
-        path_weight_by_direction["west"]["max_allowable_distance"] = west_distance_with_edge
-    if "east" in path_weight_by_direction:
-        path_weight_by_direction["east"]["max_allowable_distance"] = east_distance_with_edge
+    label = font.render(f"seed={seed}  rooms={len(rooms)}",True,COLOR_TEXT)
 
-    print(f"Distances maximales autorisées par direction: {path_weight_by_direction}")
+    screen.blit(label, (MARGIN, MARGIN + GRID_H * CELL_SIZE + 12))
+    label = font.render("(R: random seed, ESPACE: seed+1, ECHAP: quitter)",True,COLOR_TEXT)
+    screen.blit(label, (MARGIN, MARGIN + GRID_H * CELL_SIZE + 36))
+ 
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((MARGIN * 2 + GRID_W * CELL_SIZE, MARGIN * 3 + GRID_H * CELL_SIZE + 20))
+    pygame.display.set_caption("Dungeon Generator")
+    font = pygame.font.SysFont(None, 24)
 
-    budgets = split_budget(path_weight_by_direction, total_budget=max_rooms, rng=rng)
-    print(f"Budgets répartis par direction: {budgets}")
+    seed = random.randint(0, 2**32 - 1)
+    grid, rooms = generate_dungeon(seed, continuity_bias=CONTINUITY_BIAS)
 
-    for direction in path_weight_by_direction:
-        path_weight_by_direction[direction]["budget"] = budgets[direction]
+    clock = pygame.time.Clock()
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                elif event.key == pygame.K_r:
+                    seed = random.randint(0, 2**32 - 1)
+                    grid, rooms = generate_dungeon(seed, continuity_bias=CONTINUITY_BIAS)
+                elif event.key == pygame.K_SPACE:
+                    seed += 1
+                    grid, rooms = generate_dungeon(seed, continuity_bias=CONTINUITY_BIAS)
 
-    new_rooms = []
-    initial_room_list = {}
-    # on place les salles initiale de chaque direction
-    for direction, info in path_weight_by_direction.items():
-        budget = info["budget"]
-        max_distance = info["max_allowable_distance"]
-        if budget > 0 and max_distance > 0:
-            if direction == "north":
-                new_coord = (spawn_room.coord[0], spawn_room.coord[1] - 1)
-            elif direction == "south":
-                new_coord = (spawn_room.coord[0], spawn_room.coord[1] + 1)
-            elif direction == "west":
-                new_coord = (spawn_room.coord[0] - 1, spawn_room.coord[1])
-            elif direction == "east":
-                new_coord = (spawn_room.coord[0] + 1, spawn_room.coord[1])
-            else:
-                continue
+        draw(screen, font, grid, rooms, seed)
+        pygame.display.flip()
+        clock.tick(60)
 
-            if new_coord in grid and new_coord not in visited:
-                new_room = Room(coord=new_coord, room_type="room")
-                rooms.append(new_room)
-                new_rooms.append(new_room)
-                initial_room_list[direction] = new_room
-                visited.add(new_coord)
-                print(f"Salle ajoutée à {new_coord} dans la direction {direction}.")
-            else:
-                print(f"Impossible d'ajouter une salle à {new_coord} dans la direction {direction} (hors grille ou déjà visitée).")
-
-
-    # Maintenant on récupère chaque salle initiale et on génère des chemins supplémentaires à partir de celle-ci
-    for room in initial_room_list:
-        current_room = initial_room_list[room]
-        direction = room
-        budget = path_weight_by_direction[direction]["budget"]
-        max_distance = path_weight_by_direction[direction]["max_allowable_distance"]
-
-        for _ in range(budget - 1):  # On a déjà placé une salle, donc on fait budget - 1
-            neighbor_coord = { "north": (current_room.coord[0], current_room.coord[1] - 1),
-                               "south": (current_room.coord[0], current_room.coord[1] + 1),
-                               "west": (current_room.coord[0] - 1, current_room.coord[1]),
-                               "east": (current_room.coord[0] + 1, current_room.coord[1]) }
-            print(f"Tentative de placement d'une nouvelle salle à partir de {current_room.coord} dans la direction {direction}. Voisinage: {neighbor_coord}")
-            valide_direction = False
-            retry_count = 0
-            while not valide_direction and retry_count < 5:
-                retry_count += 1
-                new_coord = rng.choice(list(neighbor_coord.values()))
-                if new_coord in grid and new_coord not in visited:
-                    valide_direction = True
-                else:
-                    print(f"Coordonnée {new_coord} invalide pour la direction {direction}, tentative de nouvelle coordonnée.")
-
-            if new_coord in grid and new_coord not in visited:
-                new_room = Room(coord=new_coord, room_type="room")
-                rooms.append(new_room)
-                new_rooms.append(new_room)
-                visited.add(new_coord)
-                current_room = new_room  # Met à jour la salle actuelle pour la prochaine itération
-                print(f"Salle ajoutée à {new_coord} dans la direction {direction}.")
-            else:
-                print(f"Impossible d'ajouter une salle à {new_coord} dans la direction {direction} (hors grille ou déjà visitée).")
-                break  # Arrête de générer des salles dans cette direction si on ne peut pas en ajouter
-
-    return new_rooms
-
-def print_grid(grid: list[tuple[int, int]], rooms: list[Room] | None = None) -> None:
-    if rooms is None:
-        rooms = []
-    """Affiche la grille avec les salles."""
-    grid_dict = {coord: " " for coord in grid}
-    for room in rooms:
-        grid_dict[room.coord] = room.room_type[0].upper()  # Utilise la première lettre du type de salle
-
-    print("Grille:")
-    for y in range(grid_max_width):
-        row = ""
-        for x in range(grid_max_width):
-            row += f"[{x},{y}: {grid_dict[(x, y)]}]"
-        print(row)
-
-def seed_to_number(seed_input: str) -> int:
-    """Convertit une seed en un nombre entier."""
-    digest = hashlib.sha256(seed_input.encode("utf-8")).hexdigest()
-    return int(digest[:16], 16)
-
-
+    pygame.quit()
 
 if __name__ == "__main__":
-    grid = [(x, y) for x in range(grid_max_width) for y in range(grid_max_width)]
-    rooms = []
-    seed_input = input("Entrez une seed (ou appuyez sur Entrée pour une seed aléatoire): ")
-    if not seed_input:
-        for i in range(3):
-            seed_input = random.randbytes(16).hex()
-            seed = seed_to_number(seed_input.strip())
-            spawn_room = place_spawn_room(grid, seed)
-            rooms.append(spawn_room)
-            generate_paths(grid, rooms, seed)
-            print_grid(grid, rooms)
-            rooms.clear()  # Réinitialise la liste des salles pour la prochaine itération
-    else:
-        seed = seed_to_number(seed_input.strip())
-        print(f"Seed fournie: {seed_input} (numérique: {seed})")
-        spawn_room = place_spawn_room(grid, seed)
-        rooms.append(spawn_room)
-        new_rooms = generate_paths(grid, rooms, seed, max_rooms=15)
-        rooms.extend(new_rooms)  # Ajoute les nouvelles salles générées à la liste des salles
-        print_grid(grid, rooms)
-
+    main()
