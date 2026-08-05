@@ -18,12 +18,15 @@ Chacun de ces sous-système dérive la seed avec un sel dessus.
 - `dungeon_gen.py`: logique de génération : grille, salles, pathfinding récursif, placement spawn/boss.
 - `main.py`: viewer Pygame minimaliste pour visualiser un donjon généré.
 
-## Lancer le viewer
+## Installer les deps (si nécessaire) et lancer le viewer
+
+### Prérequis : [**uv** ↗](https://docs.astral.sh/uv/getting-started/installation) doit être installé.
 
 ```bash
-pip install pygame
-python main.py
+./go
 ```
+
+(Sous linux, le hot-reload perd le focus de l'éditeur - ALT + TAB permet de l'y récupérer)
 
 ### Contrôles
 
