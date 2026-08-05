@@ -212,8 +212,11 @@ def print_grid(grid: list[tuple[int, int]], rooms: list[Room] | None = None) -> 
     for room in rooms:
         grid_dict[room.coord] = room.room_type[0].upper()
 
+    grid_max_width = max(x for x, y in grid) + 1
+    grid_max_height = max(y for x, y in grid) + 1
+
     print("Grille:")
-    for y in range(grid_max_width):
+    for y in range(grid_max_height):
         row = ""
         for x in range(grid_max_width):
             row += f"[{x},{y}: {grid_dict[(x, y)]}]"
