@@ -3,7 +3,9 @@ import pygame
 from dungeon_gen import generate_dungeon
 from constant import *
 
-def draw(screen, font, grid, rooms, seed, status):
+room_by_coord = {}
+
+def draw(screen, font, grid, rooms, seed, status, room_by_coord):
     screen.fill(COLOR_BG)
     if status["status"] != 0:
         label = font.render(f"Error: {status['message']}", True, (255, 0, 0))
@@ -27,6 +29,37 @@ def draw(screen, font, grid, rooms, seed, status):
     screen.blit(label, (MARGIN, MARGIN + GRID_H * CELL_SIZE + 12))
     label = font.render("(R: random seed, ESPACE: seed+1, ECHAP: quitter)",True,COLOR_TEXT)
     screen.blit(label, (MARGIN, MARGIN + GRID_H * CELL_SIZE + 36))
+
+def screen_to_grid_coord(mouse_pos, margin, cell_size):
+    mx, my = mouse_pos
+    gx = (mx - margin) // cell_size
+    gy = (my - margin) // cell_size
+    return (gx, gy)
+
+
+def draw_room_inspector(screen, font, room, population, x, y):
+    """Panneau texte listant le contenu d'une salle survolée."""
+    type_label = "Salle de spawn" if room.room_type == "spawn" else "Salle de boss" if room.room_type == "boss" else "Salle normale"
+    lines = [f"Salle {room.coord} - {type_label}"]
+    if room.pattern:
+        lines.append(f"Pattern: {room.pattern.pattern_id}")
+    
+    if population:
+        lines.append("Contenu:")
+        for item in population:
+            lines.append(f" - {item}")
+    
+    if room.pattern and room.pattern.containers:
+        lines.append("Conteneurs:")
+        for container in room.pattern.containers:
+            lines.append(f" - {container}")
+
+    panel_rect = pygame.Rect(x, y, 260, 20 + len(lines) * 20)
+    pygame.draw.rect(screen, (20, 20, 24), panel_rect)
+    pygame.draw.rect(screen, (90, 90, 100), panel_rect, 1)
+    for i, line in enumerate(lines):
+        surf = font.render(line, True, (230, 230, 230))
+        screen.blit(surf, (x + 8, y + 8 + i * 20))
  
 def main():
     pygame.init()
@@ -36,11 +69,13 @@ def main():
 
     seed = random.randint(0, 2**32 - 1)
     grid, rooms, status = generate_dungeon(seed, continuity_bias=CONTINUITY_BIAS, w=GRID_W, h=GRID_H, max_rooms=MAX_ROOMS)
+    room_by_coord = {room.coord: room for room in rooms}
   
 
     clock = pygame.time.Clock()
     running = True
     while running:
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -50,11 +85,18 @@ def main():
                 elif event.key == pygame.K_r:
                     seed = random.randint(0, 2**32 - 1)
                     grid, rooms, status = generate_dungeon(seed, continuity_bias=CONTINUITY_BIAS, w=GRID_W, h=GRID_H, max_rooms=MAX_ROOMS)
+                    room_by_coord = {room.coord: room for room in rooms}
                 elif event.key == pygame.K_SPACE:
                     seed += 1
                     grid, rooms, status = generate_dungeon(seed, continuity_bias=CONTINUITY_BIAS, w=GRID_W, h=GRID_H, max_rooms=MAX_ROOMS)
+                    room_by_coord = {room.coord: room for room in rooms}
       
-        draw(screen, font, grid, rooms, seed, status)
+        draw(screen, font, grid, rooms, seed, status, room_by_coord=room_by_coord)
+        hovered_coord = screen_to_grid_coord(pygame.mouse.get_pos(), MARGIN, CELL_SIZE)
+        hovered_room = room_by_coord.get(hovered_coord)
+        if hovered_room:
+            population = hovered_room.population if hovered_room.population else []
+            draw_room_inspector(screen, font, hovered_room, population, x=20, y=20)
         pygame.display.flip()
         clock.tick(60)
 

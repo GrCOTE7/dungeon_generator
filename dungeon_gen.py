@@ -16,7 +16,8 @@ class RoomPattern:
 class Room:
     room_type: str = "room" 
     coord: tuple[int, int]
-    poppulation: list[str] = None
+    population: list[str] = None
+    pattern: RoomPattern | None = None
 
     def __init__(self, coord: tuple[int, int], room_type: str = "room") -> None:
         self.coord = coord
@@ -39,7 +40,31 @@ class LootTable:
     def __init__(self, table_id: str, items: list[LootTableItem]) -> None:
         self.table_id : str = table_id
         self.items : list[LootTableItem] = items
+    
+    def get_random_item(self, rng: random.Random) -> LootTableItem:
+        """Retourne un item aléatoire de la table en fonction de sa rareté."""
+        total_rarity = sum(item.rarity for item in self.items)
+        rand_value = rng.uniform(0, total_rarity)
+        cumulative_rarity = 0.0
+        for item in self.items:
+            cumulative_rarity += item.rarity
+            if rand_value <= cumulative_rarity:
+                return item
+        return self.items[-1] 
 
+@dataclass
+class EnnemyTableItem:
+    """Classe représentant un ennemi dans une table d'ennemis."""
+    enemy_id: str
+    rarity: float
+    enemy_name: str
+    enemy_description: str
+
+class EnnemyTable:
+    """Classe représentant une table d'ennemis."""
+    def __init__(self, table_id: str, items: list[EnnemyTableItem]) -> None:
+        self.table_id : str = table_id
+        self.items : list[EnnemyTableItem] = items
 
 def _loading_loot_tables() -> dict[str, LootTable]:
     with open("loot_tables.json", "r") as f:
@@ -50,6 +75,22 @@ def _loading_loot_tables() -> dict[str, LootTable]:
         loot_table = LootTable(table_id=table_data["table_id"], items=items)
         loot_tables[table_data["table_id"]] = loot_table
     return loot_tables
+
+def _loading_ennemy_tables() -> dict[str, EnnemyTable]:
+    with open("ennemy_tables.json", "r") as f:
+        data = json.load(f)
+    ennemy_tables = {}
+    for table_data in data:
+        items = [EnnemyTableItem(**item_data) for item_data in table_data["enemies"]]
+        ennemy_table = EnnemyTable(table_id=table_data["table_id"], items=items)
+        ennemy_tables[table_data["table_id"]] = ennemy_table
+    return ennemy_tables
+
+def _loading_room_patterns() -> list[RoomPattern]:
+    with open("room_patterns.json", "r") as f:
+        data = json.load(f)
+    room_patterns = [RoomPattern(**pattern_data) for pattern_data in data]
+    return room_patterns
 
 
 def manhattan_distance(a, b):
@@ -186,6 +227,27 @@ def find_available_neighbors(coord: tuple[int, int], rng: random.Random, grid: l
 
     return find_available_neighbors(chosen_neighbor, rng, grid, visited, step - 1, path, previous_dir=chosen_dir, continuity_bias=continuity_bias)
 
+def apply_room_patterns(rooms: list[Room], room_patterns: list[RoomPattern], seed: int) -> None:
+    """Applique des motifs de salle aux salles générées."""
+    room_seed = derive_seed(seed, "room_patterns")
+    rng = random.Random(room_seed)
+    for room in rooms:
+        if room.room_type == "room":
+            available_patterns = [pattern for pattern in room_patterns if pattern.tier == 1]  # Exemple: tier <= 1 pour les salles normales
+            if available_patterns:
+                chosen_pattern = rng.choice(available_patterns)
+                room.add_pattern(chosen_pattern)
+        if room.room_type == "spawn":
+            available_patterns = [pattern for pattern in room_patterns if pattern.tier == 0]  # Exemple: tier <= 1 pour la salle de spawn
+            if available_patterns:
+                chosen_pattern = rng.choice(available_patterns)
+                room.add_pattern(chosen_pattern)
+        if room.room_type == "boss":
+            available_patterns = [pattern for pattern in room_patterns if pattern.tier == 2]  # Exemple: tier >= 2 pour la salle de boss
+            if available_patterns:
+                chosen_pattern = rng.choice(available_patterns)
+                room.add_pattern(chosen_pattern)
+
 def generate_paths(grid: list[tuple[int, int]], rooms: list[Room], seed: int, max_rooms: int = 10, continuity_bias: float = 0.5, previous_dir = None, visited: set[tuple[int, int]] | None = None) -> list[Room]:
     """Génère des chemins entre les salles."""
     path_sub_seed = derive_seed(seed, "paths")
@@ -242,7 +304,15 @@ def generate_dungeon(seed: int, continuity_bias: float = 0.6, w: int = 10, h: in
     loot_tables = _loading_loot_tables()  # Chargement des tables de loot
     if not loot_tables:
         return [], [], {"status": 3, "message": "Failed to load loot tables."}
+        
+    ennemy_tables = _loading_ennemy_tables()  # Chargement des tables d'ennemis
+    if not ennemy_tables:
+        return [], [], {"status": 3, "message": "Failed to load enemy tables."}
     
+    room_patterns = _loading_room_patterns()  # Chargement des motifs de salle
+    if not room_patterns:
+        return [], [], {"status": 3, "message": "Failed to load room patterns."}
+
     status_dict = {"status": 0, "message": "Dungeon generated successfully."}
     if max_rooms >= (w * h) - 2: # On retire 2 pour la salle de spawn et la salle de boss pour le moment
         status_dict = {"status": 1, "message": f"max_rooms ({max_rooms}) is too high for the grid size ({w}x{h})."}
@@ -257,6 +327,10 @@ def generate_dungeon(seed: int, continuity_bias: float = 0.6, w: int = 10, h: in
         rooms.append(boss)
     else:
         status_dict = {"status": 2, "message": "Failed to place boss room."}
+    
+    apply_room_patterns(rooms, room_patterns, seed)
+    print(f"Generated dungeon with seed {seed}: {len(rooms)} rooms (spawn + boss included).")
+    print(f"Rooms: {[room.coord for room in rooms]}, Patterns: {[room.pattern.pattern_id if room.pattern else None for room in rooms]}")
     return grid, rooms, status_dict
 
 def print_grid(grid: list[tuple[int, int]], rooms: list[Room] | None = None) -> None:
