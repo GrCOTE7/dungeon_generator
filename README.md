@@ -18,29 +18,44 @@ Chacun de ces sous-système dérive la seed avec un sel dessus.
 - `dungeon_gen.py`: logique de génération : grille, salles, pathfinding récursif, placement spawn/boss.
 - `main.py`: viewer Pygame minimaliste pour visualiser un donjon généré.
 
-## Lancer le viewer
+## Installer les deps (si nécessaire) et lancer le viewer
+
+### Prérequis : [**uv** ↗](https://docs.astral.sh/uv/getting-started/installation) doit être installé
+
+### Mode Desktop App
 
 ```bash
-pip install pygame
-python main.py
+./go
 ```
+
+(Sous linux (ou wsl), le hot-reload perd le focus de l'éditeur - ALT + TAB permet de l'y récupérer)
+
+### Mode Web App
+
+```bash
+./go w
+```
+
+### Sans aucune installation, dans un CodeSpace
+
+#### [Doc pour usage CodeSpace](./doc/CODESPACES.md)
 
 ### Contrôles
 
 | Touche   | Action                                      |
-|----------|----------------------------------------------|
-| `R`      | Régénère avec un nouveau seed aléatoire       |
-| `ESPACE` | Régénère avec le seed suivant (seed + 1)      |
-| `ECHAP`  | Quitte                                        |
+|----------|---------------------------------------------|
+| `R`      | Régénère avec un nouveau seed aléatoire     |
+| `ESPACE` | Régénère avec le seed suivant (seed + 1)    |
+| `ECHAP`  | Quitte                                      |
 
 ### Légende des couleurs
 
-| Couleur | Type de salle |
-|---------|----------------|
-| 🔴 Rouge | Spawn |
-| 🟢 Vert  | Boss |
-| 🔵 Bleu  | Salle normale |
-| ⬛ Gris  | Case vide / inutilisée |
+| Couleur   | Type de salle           |
+|-----------|-------------------------|
+| 🔴 Rouge  | Spawn                   |
+| 🟢 Vert   | Boss                    |
+| 🔵 Bleu   | Salle normale           |
+| ⬛ Gris   | Case vide / inutilisée  |
 
 En cas d'exception pendant la génération (budget impossible à atteindre, etc.), le viewer affiche un écran d'erreur avec le message et le seed concerné, plutôt que de crasher : pratique pour reproduire et débugger une seed problématique.
 
@@ -48,6 +63,7 @@ En cas d'exception pendant la génération (budget impossible à atteindre, etc.
 
 - `max_rooms`: Nombre de salle voulue en plus du spawn et du boss.
 - `continuity_bias` (0 à 1): 1 chemin plus rectiligne, 0 chemin qui serpente.
+
 ## Limitations connues
 
 - Formation de "blob" de salle récurrents malgré le continuity_bias à 1, un virage tôt fait se rejoindre les chemins.
