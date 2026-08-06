@@ -3,10 +3,9 @@
   "features": {
     "ghcr.io/devcontainers/features/desktop-lite:1": {}
   },
-  "forwardPorts": [6080, 8550],
+  "forwardPorts": [6080],
   "portsAttributes": {
-    "6080": { "label": "desktop-lite", "onAutoForward": "openBrowser" },
-    "8550": { "label": "flet-web", "onAutoForward": "openBrowser" }
+    "6080": { "label": "desktop-lite", "onAutoForward": "openBrowser" }
   },
   "postCreateCommand": "pip install uv && uv sync"
 }
