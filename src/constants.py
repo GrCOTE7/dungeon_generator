@@ -1,6 +1,6 @@
 # Position of the App window
-APP_LEFT =   0
-APP_TOP  =   0
+APP_LEFT =   1478
+APP_TOP  =     30
 # Example pour un écran de 1920 x 1080 :
 # - Linux    : 1460, 30
 # - Windows  : 1478, 30
