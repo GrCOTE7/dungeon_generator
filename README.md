@@ -22,11 +22,23 @@ Chacun de ces sous-système dérive la seed avec un sel dessus.
 
 ### Prérequis : [**uv** ↗](https://docs.astral.sh/uv/getting-started/installation) doit être installé.
 
+### Mode Desktop App
+
 ```bash
 ./go
 ```
 
-(Sous linux, le hot-reload perd le focus de l'éditeur - ALT + TAB permet de l'y récupérer)
+(Sous linux (ou wsl), le hot-reload perd le focus de l'éditeur - ALT + TAB permet de l'y récupérer)
+
+### Mode Web App
+
+```bash
+./go w
+```
+
+### Sans aucune installation, dans un CodeSpace
+
+[Doc pour usage CodeSpace](./doc/CODESPACES.md)
 
 ### Contrôles
 
