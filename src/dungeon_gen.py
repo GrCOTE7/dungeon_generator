@@ -461,6 +461,7 @@ def generate_dungeon(
     print(
         f"Rooms: {[room.coord for room in rooms]}, Patterns: {[room.pattern.pattern_id if room.pattern else None for room in rooms]}"
     )
+    # print(f"{custom_invite()}", end=" > ")
     return grid, rooms, status_dict
 
 

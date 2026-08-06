@@ -4,6 +4,7 @@ import os, sys, random, pygame, time
 from src.dungeon_gen import generate_dungeon
 from src.constants import *
 from src.focus import remember_focus, restore_focus
+from helpers.env import custom_invite
 
 room_by_coord = {}
 
@@ -140,8 +141,10 @@ def main():
         clock.tick(60)
 
     pygame.quit()
+    print("Fini !", end=" > ", flush=True)
+    # print("\n\n" + f"{custom_invite()}", end=" > ", flush=True)
 
 
 if __name__ == "__main__":
-    print("123")
+    print("Go!")
     main()
