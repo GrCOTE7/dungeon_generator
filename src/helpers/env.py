@@ -7,4 +7,4 @@ def curr_time():
 
 def custom_invite():
     now = dt.now()
-    return f"[{now.hour:02d}:{now.minute:02d}:{now.second:02d}] > "
+    return f"{curr_time()} > "

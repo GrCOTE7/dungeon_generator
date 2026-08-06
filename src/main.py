@@ -103,6 +103,8 @@ def main():
     )
     room_by_coord = {room.coord: room for room in rooms}
 
+    print(f"{custom_invite()}", flush=True)
+
     clock = pygame.time.Clock()
     running = True
     while running:
@@ -141,7 +143,6 @@ def main():
         clock.tick(60)
 
     pygame.quit()
-    print("Fini !", end=" > ", flush=True)
     # print("\n\n" + f"{custom_invite()}", end=" > ", flush=True)
 
 
