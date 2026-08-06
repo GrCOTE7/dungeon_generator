@@ -20,7 +20,7 @@ Chacun de ces sous-système dérive la seed avec un sel dessus.
 
 ## Installer les deps (si nécessaire) et lancer le viewer
 
-<h3>Prérequis : <a href='https://docs.astral.sh/uv/getting-started/installation' title='ATTENTION: Faire CTRL + clic sur GitHub pour forcer un nouvel onglet...'><b>uv ↗</b></a> doit être installé</h3>
+<h3>Prérequis : <a href='https://docs.astral.sh/uv/getting-started/installation' title='ATTENTION: Faire CTRL + Clic sur GitHub pour forcer un nouvel onglet...'><b>uv ↗</b></a> doit être installé</h3>
 
 ### Mode Desktop App
 
