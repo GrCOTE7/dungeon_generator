@@ -17,10 +17,9 @@ def draw(screen, font, grid, rooms, seed, status, room_by_coord):
         return
 
     room_by_coord = {room.coord: room for room in rooms}
-
     for x, y in grid:
         rect = pygame.Rect(
-            MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, CELL_SIZE, CELL_SIZE
+            MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE , CELL_SIZE, CELL_SIZE
         )
         if (x, y) in room_by_coord:
             room = room_by_coord[(x, y)]
@@ -123,6 +122,7 @@ def main():
                         h=GRID_H,
                         max_rooms=MAX_ROOMS,
                     )
+                    room_by_coord = {room.coord: room for room in rooms}
                 elif event.key == pygame.K_SPACE:
                     seed += 1
                     grid, rooms, status = generate_dungeon(

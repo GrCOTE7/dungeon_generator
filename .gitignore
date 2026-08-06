@@ -3,3 +3,4 @@ __pycache__/
 src/*.egg-info/
 .flet/
 src/constants.py
+constant.py
