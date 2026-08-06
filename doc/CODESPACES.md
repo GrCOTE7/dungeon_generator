@@ -78,12 +78,12 @@ Et voilà :-) : Plus qu'à la positionner (Une seule fois pour toute la cession)
   </a>
 </div>
 
-Et le + bô : HotReload  OK :slight_smile: (Et le focus reste dans l'éditeur)
+Et le + bô : HotReload  OK 😊 (Et le focus reste dans l'éditeur !!!)
 
 Look la ch'ti vidéo (3'36) !
 
 <div align="center">
-  <a href="https://www.youtube.com/watch?v=t1zMdCvIZXE&t=216s" target="_blank">
+  <a href="https://www.youtube.com/watch?v=t1zMdCvIZXE&t=216s" target="_blank" title=' Clique ICI pour ouvrir la vidéo ! '>
     <img src="./assets/imgs/codespace/09_video.png" width="700">
   </a>
 </div>
